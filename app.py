@@ -40,7 +40,7 @@ st.markdown("""
 
 def main():
     # Header
-    st.markdown('<h1 class="main-header">�� Discretization & Binning Demo</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">📊📊 Discretization & Binning Demo</h1>', unsafe_allow_html=True)
     
     # Sidebar
     st.sidebar.title("🎛️ Cài đặt")
