@@ -40,11 +40,12 @@ st.markdown("""
 
 def main():
     # Header
+
     st.markdown('<h1 class="main-header">📊📊 Discretization & Binning Demo</h1>', unsafe_allow_html=True)
     
     # Sidebar
+    st.sidebar.image("dsd3-favicon.jpg")
     st.sidebar.title("🎛️ Cài đặt")
-    
     # Upload file
     uploaded_file = st.sidebar.file_uploader(
         "📁 Chọn file CSV",
@@ -100,7 +101,7 @@ def main():
                     row=1, col=2
                 )
                 
-                fig.update_layout(height=400, showlegend=False)
+                fig.update_layout(height=400, showlegend=False, bargap=0.3)
                 st.plotly_chart(fig, use_container_width=True)
                 
                 # Chọn thuật toán
@@ -122,17 +123,14 @@ def main():
                 if selected_algorithm:
                     # Hiển thị thông tin thuật toán
                     method_name = algo_display_names[selected_algorithm]
-                    print(method_name)
                     selected_func = getattr(DiscretizationAlgorithms, method_name)
                     print(selected_func)
-                    print(algorithms_info[selected_algorithm]['description'])
                     st.markdown(f"""
                     <div class="algorithm-card">
                         <h4>{selected_algorithm}</h4>
                         <p>{algorithms_info[selected_algorithm]['description']}</p>
                     </div>
                     """, unsafe_allow_html=True)
-                    print('abc')
                     source_code = inspect.getsource(selected_func)
                     with st.expander("👨‍💻 Xem code thuật toán"):
                         st.code(source_code, language='python')
@@ -173,21 +171,13 @@ def main():
                             # Hiển thị bảng kết quả
                             st.dataframe(result_df.head(20), use_container_width=True)
                             
-                            # Thống kê bin
-                            bin_counts = pd.Series(discretized_data).value_counts()
-                            bin_counts = bin_counts.sort_index(key=lambda x: x.str.split('_').str[1].astype(int))
-                            st.write("**Phân bố các bin:**")
-                            fig_bar = go.Figure(data=[go.Bar(x=bin_counts.index, y=bin_counts, marker_color='#2f9e44')])
-                            fig_bar.update_layout(xaxis_title='Bins', yaxis_title='Số lượng', title='Phân bố các bin')
-                            st.plotly_chart(fig_bar, use_container_width=True)
-                            
                             # Vẽ biểu đồ so sánh
                             st.subheader("📈 So sánh trước và sau discretization")
                             
                             fig_compare = make_subplots(
                                 rows=1, cols=2,
                                 subplot_titles=('Dữ liệu gốc', 'Dữ liệu sau discretization'),
-                                specs=[[{"type": "histogram"}, {"type": "histogram"}]]
+                                specs=[[{"type": "histogram"}, {"type": "bar"}]]
                             )
                             
                             # Histogram dữ liệu gốc
@@ -196,18 +186,26 @@ def main():
                                 row=1, col=1
                             )
                             
-                            # Histogram dữ liệu discretized
-                            bin_labels = sorted(set(discretized_data), key=lambda x: int(x.split('_')[1]))
-                            discretized_data = pd.Categorical(discretized_data, categories=bin_labels, ordered=True)
-
+                            # Thống kê bin
+                            bin_counts = pd.Series(discretized_data).value_counts()
+                            bin_counts = bin_counts.sort_index(key=lambda x: x.str.split('_').str[1].astype(int))
+                            
                             fig_compare.add_trace(
-                                go.Histogram(x=discretized_data, name="Discretized", marker_color='#2f9e44'),
+                                go.Bar(x=bin_counts.index, y=bin_counts, marker_color='#2f9e44', name="Bin Distribution"),
                                 row=1, col=2
                             )
                             
-                            fig_compare.update_layout(height=400, showlegend=False)
+                            fig_compare.update_layout(
+                                height=400, 
+                                showlegend=False,
+                                title="So sánh trước và sau discretization",
+                                bargap=0.3  # Tạo khoảng cách giữa các bin
+                            )
+                            
+                            # Chỉ hiển thị một lần
                             st.plotly_chart(fig_compare, use_container_width=True)
                             
+                            # Hiển thị thống kê bin riêng
                             # Download kết quả
                             csv = result_df.to_csv(index=False)
                             st.download_button(
@@ -227,8 +225,8 @@ def main():
         👋 **Chào mừng đến với Discretization & Binning Demo!**
         
         **Cách sử dụng:**
-        1. �� Upload file CSV chứa dữ liệu numerical
-        2. �� Chọn cột numerical bạn muốn discretize
+        1. 📤 Upload file CSV chứa dữ liệu numerical
+        2. 🔍 Chọn cột numerical bạn muốn discretize
         3. 🔧 Chọn thuật toán discretization
         4. ⚙️ Điều chỉnh tham số (nếu có)
         5. 🚀 Nhấn "Áp dụng thuật toán" để xem kết quả
@@ -271,7 +269,7 @@ def apply_algorithm(algorithm_name, data, params):
         discretized, _, _ = algo.equal_width_binning(data, params['n_bins'])
     elif algorithm_name == "Equal Frequency Binning":
         discretized, _ = algo.equal_frequency_binning(data, params['n_bins'])
-    elif algorithm_name == "K-Means Binning":
+    elif algorithm_name == "KMeans Binning":
         discretized, _ = algo.kmeans_binning(data, params['n_bins'])
     elif algorithm_name == "Jenks Natural Breaks":
         discretized, _ = algo.jenks_natural_breaks(data, params['n_bins'])
