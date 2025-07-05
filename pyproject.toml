@@ -1,0 +1,23 @@
+[project]
+name = "desscretozation"
+version = "0.1.0"
+description = "Demo ứng dụng Discretization & Binning với Streamlit"
+authors = [
+    {name = "lhduc94"}
+]
+ package-mode = false 
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "streamlit>=1.46.1,<2.0.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "plotly>=5.0.0",
+    "seaborn>=0.12.0",
+    "matplotlib>=3.7.0",
+    "scikit-learn>=1.3.0"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
